@@ -1,0 +1,1228 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue May 12 18:14:31 2020
+
+@author: tomophilia#!/usr/bin/env python3
+"""
+
+# Warped City Level 1 of 1
+import math
+import pygame
+from random import randint, choice
+pygame.init()
+pygame.font.init()
+myfont = pygame.font.SysFont('Comic Sans MS', 15, bold=True)
+yellow = (255, 255, 0)
+def one_life():
+    # Game Loop Function
+    city_blit = (-200, -500)
+    city_scale = (1200, 1400)
+    guy_scale = (100, 100)
+    display_width = 800
+    display_height = 600
+
+    ax = -50
+    ay = 525
+    clock = pygame.time.Clock()
+    vel = 5
+    drone_vel = 3
+    width = 40
+    height = 60
+    gameDisplay = pygame.display.set_mode((display_width, display_height))
+    pygame.display.set_caption('Warped City')
+    black = (0, 0, 0)
+    white = (255, 255, 255)
+    my_home_path = '/Users/tomophilia/Desktop/Tom Projects Current/Python/'
+    warped_path = my_home_path + 'Warped City/warped city files/'
+
+    # Idle sprites s
+    idler = 'SPRITES/player/idle/idle-'
+    idle_list = [pygame.transform.scale(pygame.image.load(warped_path + idler + str(x + 1) + '.png'), (90, 90)) for x in
+                range(4)]
+    idle_list_R = [pygame.transform.flip(x, True, False) for x in idle_list]
+
+    # walk sprite s
+    walker = 'SPRITES/player/walk/walk-'
+    walk_list = [pygame.transform.scale(pygame.image.load(warped_path + walker + str(x + 1) + '.png'), (90, 90)) for x in range(16)]
+    walk_list_R = [pygame.transform.flip(x, True, False) for x in walk_list]
+
+    # Run sprites s
+    runner = 'SPRITES/player/run/run-'
+    run_list = [pygame.transform.scale(pygame.image.load(warped_path + runner + str(x + 1) + '.png'), (90, 90)) for x in range(8)]
+    run_list_R = [pygame.transform.flip(x, True, False) for x in run_list]
+
+    # Jump Sprites s
+    jumper = 'SPRITES/player/jump/jump-'
+    jump_list = [pygame.transform.scale(pygame.image.load(warped_path + jumper + str(x + 1) + '.png'), (90, 90)) for x in range(4)]
+    jump_list_R = [pygame.transform.flip(x, True, False) for x in jump_list]
+
+    # Ladder Climb Sprites s
+    climber = 'SPRITES/player/climb/climb-'
+    climb_list = [pygame.transform.scale(pygame.image.load(warped_path + climber + str(x + 1) + '.png'), (90, 90)) for x in
+                range(6)]
+
+    # attack sprites s
+    attack_idle = pygame.transform.scale(pygame.image.load(warped_path + 'SPRITES/player/shoot/shoot.png'), (90, 90))
+    attack_idle_R = pygame.transform.flip(attack_idle, True, False)
+
+    # Hurt sprites
+    hurt = pygame.transform.scale(pygame.image.load(warped_path + 'SPRITES/player/hurt/hurt.png'), (90, 90))
+    hurt_R = pygame.transform.flip(hurt, True, False)
+    hurt_list = [hurt, jump_list[2]]
+    hurt_list_R = [hurt_R, jump_list_R[2]]
+    hurt_quadratica = [(i ** 2) * 0.5 for i in range(1, 5)]
+    hurt_quad_negs = [(i ** 2) * 0.5 * -1 for i in range(1, 5)]
+    hurt_quad_negs = [i * -1 for i in hurt_quad_negs]
+    hurt_quad_negs = hurt_quad_negs[::-1]
+    hurt_quadratica = hurt_quadratica + hurt_quad_negs
+    # run and gun sprites
+    run_shoot = [pygame.transform.scale(pygame.image.load(warped_path + 'SPRITES/player/run-shoot/run-shoot-' + str(x + 1) + '.png'), (90, 90)) for x in range(8)]
+    run_shoot_R = [pygame.transform.flip(x, True, False) for x in run_shoot]
+    # Backgrounds 
+    bg_0 = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/background/skyline-b.png'), city_scale)
+    bg_1 = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/background/buildings-bg.png'), (460, 460))
+    bg_2 = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/background/near-buildings-bg.png'), (400, 400))
+    ground_level = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/bowl_thingy.png'), (115, 115))
+    ground_square = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/bowl_thingy_square.png'), (40, 40))
+    blinds = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/window_closed.png'), (100, 140))
+    window_open = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/window_open.png'), (100, 140))
+    ladder = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/ladder_repeat.png'), (40, 40))
+    smoke = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/smokey_time.png'), (500, 500))
+    building_wall = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/building_wall.png'), (40, 40))
+    brick_mid = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/brick_middle.png'), (40, 130))
+    brick_lines = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/brick_lines.png'), (40, 135))
+    first_floor = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/brick_lines.png'), (300, 120))
+    first_floor_sm = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/brick_lines.png'), (260, 90))
+    first_floor_lg = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/brick_lines.png'), (230, 260))
+    busted = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/busted.png'), (230, 260))
+    fade_to_black = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/busted_gradient.png'), (600, 700))
+    fade_to_black = pygame.transform.rotate(fade_to_black, 90)
+
+
+
+    # Signs and banners
+    sign_info = {'big': 4, 'coke': 3, 'neon': 4, 'scroll': 4, 'side': 4, 'sushi': 3}
+    big_sign_list = [pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/props/banner-big/banner-big-' + str(i + 1) + '.png'), (40, 80)) for i in range(4)]
+    coke_sign_list = [pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/props/banner-coke/banner-coke-' + str(i + 1) + '.png'), (40, 80)) for i in range(3)]
+    neon_sign_list = [pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/props/banner-neon/banner-neon-' + str(i + 1) + '.png'), (40, 80)) for i in range(4)]
+    scroll_sign_list = [pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/props/banner-scroll/banner-scroll-' + str(i + 1) + '.png'), (40, 80)) for i in range(4)]
+    side_sign_list = [pygame.transform.scale(pygame.image.load( warped_path + 'ENVIRONMENT/props/banner-side/banner-side-' + str(i + 1) + '.png'), (40, 80)) for i in range(4)]
+    sushi_sign_list = [pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/props/banner-sushi/banner-sushi-' + str(i + 1) + '.png'), (90, 60)) for i in range(3)]
+    lamp_post = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/lamp_post.png'), (60, 150))
+    antenna = pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/antenna.png'), (60, 150))
+    campbell = [pygame.transform.scale(pygame.image.load(warped_path + 'ENVIRONMENT/props/monitorface/monitor-face-' + str(i + 1) + '.png'), (70, 70)) for i in range(4)]
+    campbell_messages = ['We\'re coming to extract you...', '...Wait at the tallest building','Use SPACE to jump','Hold X to fire...','Hold UP to run', 'If you see police, don\'t shoot.', 'JUST RUN!!', 'They will hear your pistol!!','Drones explode if you get too close', 'We can\'t land while...', '...drones still occupy the city', 'Don\'t run near the proximity mine!!','Destroy the proximity mine...', '...near the sushi place','Shoot it up close from behind']
+    sophon_name = myfont.render('Sophon, ', False, yellow)
+    mess_surf = [myfont.render(campbell_messages[x], False, yellow) for x in range(len(campbell_messages))]
+
+
+
+
+    # Shot explode and land
+    shot_connect = [pygame.transform.scale(pygame.image.load(warped_path + 'SPRITES/misc/shot-hit/shot-hit-' + str(x + 1) + '.png'), (30, 30)) for x in range(3)]
+    shot_connect_R = [pygame.transform.flip(x, True, False) for x in shot_connect]
+    drone_shot = [pygame.transform.scale(pygame.image.load(
+    warped_path + 'SPRITES/misc/shot/shot-' + str(x + 1) + '.png'), (30, 30)) for x in range(3)]
+    drone_shot_R = [pygame.transform.flip(x, True, False) for x in drone_shot]
+    turret_list = [pygame.transform.scale(pygame.image.load(warped_path + 'SPRITES/misc/turret/turret-' + str(x + 1) + '.png'), (40, 40)) for x in range(6)]
+    explosion = [pygame.transform.scale(pygame.image.load(warped_path + 'SPRITES/misc/enemy-explosion/enemy-explosion-' + str(x + 1) + '.png'), (65, 65)) for x in range(6)]
+    explo_frame = 0
+    # Drone Sprites
+    drone_path = 'SPRITES/misc/drone/drone-'
+    drone_sprite_list = [pygame.transform.scale(pygame.image.load(warped_path + drone_path + str(x + 1) + '.png'), (65, 65)) for x in range(4)]
+    drone_sprite_list.append(pygame.transform.flip(drone_sprite_list[0], True, False))
+
+    # Flying Cars
+    car_path = 'SPRITES/vehicles/v-'
+    cars_names = ['police', 'red', 'truck', 'yellow', 'spot_light_rb', 'red_light']
+    car_dict = {'police': 1, 'red': 1, 'truck': 2, 'yellow': 1, 'spot_light_rb': 3, 'red_light': 2}
+    flying_cars = [pygame.transform.scale(pygame.image.load(warped_path + car_path + i + '.png'), ((140 * car_dict[i]), (70 * car_dict[i]))) for i in cars_names]
+    flying_cars_R = [pygame.transform.flip(x, True, False) for x in flying_cars]
+    car_rand_select = [flying_cars[1], flying_cars[3], flying_cars_R[1], flying_cars_R[3]]
+
+    # game graphics and titles
+    titles_path = 'demo/assets/sprites/'
+    titles_names = ['credits-text', 'game-over', 'instructions', 'loading', 'press-enter-text', 'title-screen']
+    titles_dict = {'credits-text': 1, 'game-over': 1, 'instructions': 1, 'loading': 1, 'press-enter-text': 1, 'title-screen': 1}
+    titles_list = [pygame.transform.scale(pygame.image.load(warped_path + titles_path + i + '.png'), ((290 * titles_dict[i]), (110 * titles_dict[i]))) for i in titles_names]
+    titles_list[2] = pygame.transform.scale(titles_list[2], (290, 90))
+    def parallaxion(x_value, sophon_x_val):
+        # Take an x value and parallax it so it moves appropriately 
+        if between(150, 450, sophon_x_val):
+            return x_value
+        elif sophon_x_val >= 450:
+            # Slowly move X value off screen
+            new_x = x_value - (sophon_x_val - 450)
+            return new_x
+        else:
+            # Move the X value slightly left
+            new_x = x_value + (150 - sophon_x_val)
+            new_x = min(new_x, x_value + 170)
+            return new_x
+    frame_cod = 0
+    def codec_call(vid_frame, message):
+        '''Display tips for Sophon.  '''
+        gameDisplay.blit(campbell[int(big_sign_frame)], (30, 510))
+        gameDisplay.blit(titles_list[2], (80, 510))
+        gameDisplay.blit(sophon_name, (95, 513))
+        gameDisplay.blit(mess_surf[0], (95, 533))
+        if vid_frame < 4:
+            vid_frame += 1
+        else:
+            vid_frame = 0
+    def rescue_sophon(x):
+        gameDisplay.blit(flying_cars_R[2], (x, sophon.y))
+
+    def between(lower_lim, upper_lim, x):
+        # See if x falls between the lower limit and the upper limit.
+        if x > lower_lim and x <= upper_lim:
+            return True
+        else:
+            return False
+
+
+    def side_walls(x, y_pos, y_height, LoR):
+        #side walls of the buildings
+        ground = 490 - y_height
+        new_y = y_height
+        hmm = True
+        if LoR == 'L':
+            while hmm == True:
+                if new_y >= 38:
+                    gameDisplay.blit(building_wall, (parallaxion(x, sophon.x), (ground + new_y)))
+                    new_y -= 38
+                else:
+                    gameDisplay.blit(building_wall, (parallaxion(x, sophon.x), (ground + new_y)))
+                    hmm = False
+        else:
+            build_pic = pygame.transform.flip(building_wall, True, False)
+            while hmm == True:
+                if new_y >= 38:
+                    gameDisplay.blit(build_pic, (parallaxion(x, sophon.x), (ground + new_y)))
+                    new_y -= 38
+                else:
+                    gameDisplay.blit(build_pic, (parallaxion(x, sophon.x), (ground + new_y)))
+                    hmm = False       
+
+
+
+
+
+
+
+
+
+
+
+    def pistol_blast():
+        # Hold x and Sophon will fire
+        if keys[pygame.K_x] and not sophon.climb:
+            sophon.attack = True
+            if sophon.attack_burst == 6:
+                new_x = sophon.x
+                new_y = sophon.y + 17
+                if sophon.face_left == False:
+                    if sophon.run == True:
+                        new_x += 65
+                    else:
+                        new_x += 55
+
+                gameDisplay.blit(shot_connect[sophon.shot_xplode_frame], (new_x, new_y))
+                sophon.shot_xplode_frame += 1
+                if sophon.shot_xplode_frame == 2:
+                    sophon.shot_xplode_frame = 0
+                    sophon.attack_burst = 0
+                    sophon.attack = False
+            else:
+                sophon.attack_burst += 1
+
+        else:
+            sophon.attack = False
+            sophon.attack_burst = 0
+    def ladder_maker(x_value, y_value):
+        gameDisplay.blit(ladder, (x_value, y_value))
+        gameDisplay.blit(ladder, (x_value, (y_value - 40)))
+        gameDisplay.blit(ladder, (x_value, y_value - 65))
+
+
+    def building(image, iter_num, floor_space):
+        for floor in range(3):
+            gameDisplay.blit(image, (iter_num, ay + floor_space))
+            floor_space -= 130
+
+
+    def ground(image, yy):
+        for i in range(-20, 800, 15):
+            gameDisplay.blit(image, (i, yy))
+
+
+    class flying_car_obj():
+        # Create the background cars
+        def __init__(self):
+            self.cars_select = car_rand_select
+            # High = True /  Low = False
+            self.car_y_selec = True
+            self.face_left = False
+            self.on_the_road = False
+            self.current_car = choice(self.cars_select)
+            self.x_car = 0
+            self.y_car = 300
+            self.speed = 25
+            self.x_starter = choice([-15, 820])
+        def car_fly(self):
+            # cars go back and forth
+            if self.on_the_road == True:
+                self.go_go()
+                #return None
+            else:
+                self.car_picker()
+                #return None
+
+
+        def car_picker(self):
+            # Choose a car and side of screen
+            car_ind = choice([0, 1, 2, 3])
+            sizer = choice([1, 2, 3, 4])
+            self.current_car = self.cars_select[car_ind]
+            self.current_car = pygame.transform.scale(self.current_car, (20 * sizer, 10 * sizer))
+            self.on_the_road = True
+            self.speed = choice([45, 35, 25, 10])
+            if car_ind <= 1:
+                self.x_car = 800
+                self.face_left = True
+                self.y_car = choice([40, 100, 150, 200, 400,])
+                self.speed *= -1
+                
+                #return None
+            else:
+                self.x_car = -15
+                self.face_left = False
+                self.speed *= 1
+                #return None
+        def go_go(self):
+            self.x_car += self.speed
+            gameDisplay.blit(self.current_car, (self.x_car, self.y_car))
+            if not between(-25, 805, self.x_car):
+                self.on_the_road = False
+                self.x_starter = choice([-15, 820])
+            else:
+                self.on_the_road = True
+
+    class Player():
+        def __init__(self):
+            # Bools and frame counters
+            self.isJump = False
+            self.walk = False
+            self.run = False
+            self.grounded = True
+            self.face_left = False
+            self.attack = False
+            self.climb = False
+            self.hurt = False
+            self.quadratic = 1
+            self.jumpCount = 10
+            self.x = (display_width * 0.45)
+            self.y = (display_height * 0.74)
+            self.attack_burst = 0
+            self.walk_frame = 0
+            self.run_frame = 0
+            self.idle_frame = 0
+            self.jump_frame = 0
+            self.climb_frame = 0
+            self.shot_xplode_frame = 0
+            self.hit_fall = 0
+            self.hit_slide = 3
+            self.hitz = 0
+            self.dead = False
+            self.hurt_quadratic = hurt_quadratica
+            # Sprite Lists
+            self.idle_list = idle_list
+            self.idle_list_R = idle_list_R
+            self.walk_list = walk_list
+            self.walk_list_R = walk_list_R
+            self.run_list = run_list
+            self.run_list_R = run_list_R
+            self.jump_list = jump_list
+            self.jump_list_R = jump_list_R
+            self.climb_list = climb_list
+            self.attack_idle = attack_idle
+            self.attack_idle_R = attack_idle_R
+            self.run_shoot_list = run_shoot
+            self.run_shoot_list_R = run_shoot_R
+            self.hurt_list = hurt_list
+            self.hurt_list_R = hurt_list_R
+
+        def on_ground(self):
+            '''The on_ground() method will change Sophon's on ground bool.  This will run just before the falling_physics() method in the game loop.'''
+            if int(self.y) == 444:
+                self.grounded = True
+                return  True
+            # The left building first floor
+            elif between(347, 380, sophon.y) and between(-30, 102, self.x) and not self.climb:
+                self.y = 352
+                self.grounded = True
+                return True
+            # The left building second floor
+            elif between(205, 245, self.y) and between(-30, 102, self.x) and not self.climb:
+                self.y = 224
+                self.grounded = True
+                return True
+            # The left building third floor
+            elif between(80, 130, self.y) and between(-30, 102, self.x) and not self.climb:
+                self.y = 94
+                self.grounded = True
+                return True
+            # The middle building's first floor 
+            elif between(309, 340, self.y) and between(155, 460, self.x) and not self.climb:
+                self.y = 314
+                self.grounded = True
+                return  True
+            # The middle building's second floor
+            elif between(180, 210, self.y) and between(150, 460, self.x) and not self.climb:
+                self.y = 181
+                self.grounded = True
+                return True
+        
+            # The middle building's third floor x, y values
+            elif between(38, 68, self.y) and between(148, 463, self.x) and not self.climb:
+                self.y = 51
+                self.grounded = True
+                return True
+
+            # The right building first floor
+            elif between(165, 200, self.y) and between(500, 605, self.x) and not self.climb:
+                self.y = 181
+                self.grounded = True
+                return True
+
+            # The right building second floor
+            elif between(30, 80, self.y) and between(500, 605, self.x) and not self.climb:
+                self.y = 50
+                self.grounded = True
+                return True
+            else:
+                self.grounded = False
+                return False
+
+        def plasma_blast(self):
+            # Add the shoot explosion and then plasma blast
+            gameDisplay.blit(shot_connect[self.shot_xplode_frame], (sophon.x + 5, sophon.y - 5))
+            self.attack_burst = 0
+        def falling_physics(self):
+            '''After the on_ground() method, the falling_physics() method will adjust sophon's y value if she is not grounded.  '''
+            if not self.on_ground() and not self.isJump and not self.climb:
+                self.y -= (self.quadratic ** 2) * 0.2 * -1
+                if self.quadratic < 10:
+                    self.quadratic += 1
+            else:
+                quadratic = 1
+                
+        def got_hit_meth(self,drone_x_pos):
+            # make Sophon move, jump, fall after a self destruct hit or drone.
+            if self.x > drone_x_pos and self.face_left:
+                facing = True
+            elif self.x < drone_x_pos and not self.face_left:
+                facing = True
+            else:
+                facing = False
+            if self.hit_fall == 8:
+                self.hurt = False
+                self.hitz += 1
+                self.hit_fall = 0
+            elif self.hit_fall < 8:
+                self.y -= self.hurt_quadratic[self.hit_fall]
+                self.hit_fall += 1
+                self.x -= self.hit_slide
+            
+
+            else:
+                pass
+
+
+
+        def is_she_on_a_ladder(self, x, y):
+            ''' Check if Sophon is standing on or near a ladder to set her bools appropriately'''
+            mini_lad_bool = False
+            # First (Ground Level, Middle building) Ladder
+            if self.x <= 435 and self.x >= 395 and not self.run and self.y >= 300:
+                mini_lad_bool = True
+            # Middle building 2nd floor ladder
+            if self.x <= 435 and self.x >= 395 and not self.run and self.y >= 50 and self.y <= 240:
+                mini_lad_bool = True
+            # Left building 2nd floor ladder
+            if self.x <= 20 and self.x >= 0 and not self.run and self.y >= 150 and self.y <= 360:
+                mini_lad_bool = True
+            if mini_lad_bool:
+                if keys[pygame.K_UP] or keys[pygame.K_DOWN]:
+                    self.climb = True
+                    self.grounded = False
+                    return True
+                elif self.climb == True and not self.grounded:
+                    return True
+                else:
+                    self.grounded = True
+                    return False
+
+            else:
+                self.climb = False
+                self.grounded = True
+                return False
+
+        def sprite_chooser(self):
+            # return the state/sprite the character should be in... NOT the blit itself
+            # Hurt CHOOSE
+            if sophon.hurt:
+                pic_to_blit = self.hurt_list[0]
+                return pic_to_blit
+            # Idle choose
+            if not self.walk and not self.isJump and not self.climb:
+                if not self.face_left and not self.attack:
+                    pic_to_blit = self.idle_list[int(self.idle_frame)]
+                    self.idle_frame += 0.5
+                    return pic_to_blit
+                # Pistol shooter idle   
+                elif self.attack and not self.face_left:
+                    pic_to_blit = self.attack_idle
+                    return pic_to_blit
+                elif self.face_left and self.attack:
+                    pic_to_blit = self.attack_idle_R
+                    return pic_to_blit
+                else:
+                    # Blit reversed idle
+                    pic_to_blit = self.idle_list_R[int(self.idle_frame)]
+                    self.idle_frame += 1/2
+                    return pic_to_blit
+            # WALK FRAME CHOOSE
+            if self.walk and not self.isJump and not self.run and not self.is_she_on_a_ladder(sophon.x, sophon.y):
+                if not self.face_left and not self.attack:
+                    pic_to_blit = self.walk_list[int(self.walk_frame)]
+                    self.walk_frame += 1
+                    return pic_to_blit
+                elif self.attack and not self.face_left:
+                    pic_to_blit = self.attack_idle
+                    return pic_to_blit
+                elif self.attack and self.face_left:
+                    pic_to_blit = self.attack_idle_R
+                    return pic_to_blit
+                else:
+                    pic_to_blit = self.walk_list_R[int(self.walk_frame)]
+                    self.walk_frame += 1
+                    return pic_to_blit
+
+            # RUN FRAME CHOOSE
+            if self.run and self.walk and not self.isJump:
+                if not self.face_left and not self.attack:
+                    pic_to_blit = self.run_list[int(self.run_frame)]
+                    self.run_frame += 1/2
+                    return pic_to_blit
+                elif self.face_left and not self.attack:
+                    pic_to_blit = self.run_list_R[int(self.run_frame)]
+                    self.run_frame += 1/2
+                    return pic_to_blit
+                elif self.face_left and self.attack:
+                    pic_to_blit = self.run_shoot_list_R[int(self.run_frame)]
+                    self.run_frame += 1/2
+                    return pic_to_blit
+                elif not self.face_left and self.attack:
+                    pic_to_blit = self.run_shoot_list[int(self.run_frame)]
+                    self.run_frame += 1/2
+                    return pic_to_blit
+
+
+            # JUMP FRAME CHOOSE
+            if self.isJump:
+                if self.face_left:
+                    pic_to_blit = self.jump_list_R[int(self.jump_frame)]
+                    self.jump_frame += 1/4
+                    return pic_to_blit
+                else:
+                    pic_to_blit = self.jump_list[int(self.jump_frame)]
+                    self.jump_frame += 1/4
+                    return pic_to_blit
+
+
+            # Climb Ladder
+            if self.is_she_on_a_ladder and not self.on_ground():
+                pic_to_blit = self.climb_list[int(self.climb_frame)]
+                self.climb_frame += 1/2
+                return pic_to_blit
+            pic_to_blit = self.jump_list[2]
+            return pic_to_blit
+    class Turret():
+        '''A turret that will self destruct if sophon is too loud(running) near it '''
+        def __init__(self, x_val_tur, y_val_tur):
+            self.x_val_tur = x_val_tur
+            self.y_val_tur = y_val_tur
+            self.turret_sprites = turret_list
+            self.proximity_counter = 0
+            self.search_frame = 0
+            self.destruct_seq = 0
+            self.rand_light_xy = [-25, -20, -15, -10, 10, 15, 20, 25]
+            self.warning = shot_connect
+            self.deactivated = False
+        def turret_idle(self):
+            if not self.self_destruct_timer():
+                gameDisplay.blit(self.turret_sprites[int(self.search_frame)], (self.x_val_tur, self.y_val_tur))
+            else:
+                # Blow up the turret
+                pass
+
+            # Only a point blank shot will pierce its armor.
+            if self.search_frame >= 5.0 or self.deactivated:
+                self.search_frame = 0.0
+            else:
+                self.search_frame += 1/3
+            if sophon.x >= 450:
+                # Parallax the prox mine
+                laz_lax_tur = 800 - (sophon.x - 450)
+                self.x_val_tur = max(620, laz_lax_tur)
+                difference = sophon.x - self.x_val_tur
+                if sophon.attack_burst == 6 and abs(difference) < 40 and between(440, 450, sophon.y):
+                    if difference > 0 and sophon.face_left:
+                        self.deactivated = True
+                        #dead_drones += 1
+                    elif difference < 0 and not sophon.face_left and between(440, 450, sophon.y):
+                        self.deactivated = True
+                    else:
+                        pass
+            else:
+                # NO parallax needed
+                self.x_val_tur = 850
+        def self_destruct_timer(self):
+            diff_x_vals = sophon.x - self.x_val_tur
+            if abs(diff_x_vals) < 275 and sophon.run == True and between(440, 450, sophon.y):
+                self.destruct_seq += 1
+                if not self.deactivated:
+                    blinky_blit = choice(self.warning)
+                    x_light = choice(self.rand_light_xy) + self.x_val_tur
+                    y_light = choice(self.rand_light_xy) + self.y_val_tur
+                    gameDisplay.blit(blinky_blit, (x_light, y_light))
+                    blinky_blit = choice(self.warning)
+                    x_light = choice(self.rand_light_xy) + self.x_val_tur
+                    y_light = choice(self.rand_light_xy) + self.y_val_tur
+                    gameDisplay.blit(blinky_blit, (x_light, y_light))
+                
+            if self.destruct_seq == 35:
+                self.deactivated = True
+                return True
+            else:
+                return False
+    class Drone():
+        # Floating drone and its actions
+        # Create Drone with it X, Y values.  The second two arguments are both X boundaries to keep it within a certain space.
+        def __init__(self, x_drone, y_drone, x_win_1, x_win_2):
+            self.sprite_list = drone_sprite_list
+            self.shot_fired = drone_shot
+            self.shot_fired_R = drone_shot_R
+            self.ground = ground
+            self.x_drone = x_drone
+            self.y_drone = y_drone
+            self.x_plo_pics = explosion
+            self.functional = True
+            self.attack = False
+            self.under_attack = False
+            self.face_right = False
+            self.idle = True
+            self.death = False
+            self.hits = 0
+            self.arrived_at_spot = False
+            self.drone_frame = 0
+            self.destination = 400
+            self.x_win_1 = x_win_1
+            self.x_win_2 = x_win_2
+            self.bob_weave = 1
+            self.drone_neg = -1
+            self.timer = 0
+            self.shot_frame = 0
+            self.x_plo_frame = 0
+            self.self_destruct = 0
+            self.random_spot = randint(self.x_win_1, self.x_win_2)
+        def self_destruct_meth(self):
+            abs_diff = abs(sophon.x - self.x_drone)
+            abs_Y_diff = abs(sophon.y - self.y_drone)
+            if abs_diff <= 15 and abs_Y_diff <= 20:
+                self.self_destruct += 1
+            else:
+                self.self_destruct = 0
+            if self.self_destruct == 10:
+                self.death = True
+                dead_drones += 1
+                return True
+            else:
+                return False
+
+        def bob_float(self, frame_rate):
+            # Adjust the y_drone value up and down to give a bobbing effect add the if not self.death clause 
+            if self.timer == frame_rate:
+                self.timer = 0
+                self.y_drone += (self.bob_weave ** 2) * 0.3 * self.drone_neg
+                if self.bob_weave == 4:
+                    self.drone_neg *= -1
+                    self.bob_weave = -1
+                elif self.bob_weave == -4:
+                    self.drone_neg *= -1
+                    self.bob_weave = 1
+                else:
+                    if self.bob_weave >= 0:
+                        self.bob_weave += 1
+                    else:
+                        self.bob_weave -=1
+            else:
+                self.timer += 1
+
+        def under_attack_meth(self):
+            '''If Sophon approaches drone, it will awaken and attack. '''
+            try:
+                diff = sophon.x - self.x_drone
+                y_diff = abs(sophon.y - self.y_drone)
+                diffy = abs(diff)
+                if sophon.x > self.x_drone and sophon.face_left:
+                    facing = True
+                elif sophon.x < self.x_drone and not sophon.face_left:
+                    facing = True
+                else:
+                    facing = False
+            except:
+                return
+            if sophon.attack and diffy < 250 and y_diff < 50 and facing:
+                self.under_attack = True
+                # If Sophon is shooting from the right side of the drone
+                if diff > 0:
+                    self.x_drone += 3
+                # If Sophon is shooting from the left side of the drone
+                else:
+                    self.x_drone -= 3
+                if self.hits == 4:
+                    self.death = True
+                else:    
+                    self.hits += 1
+                
+            else:
+                self.under_attack = False
+        def move_random(self):
+            # The drone will pick a spot to head toward
+            true_diff = int(self.x_drone - self.random_spot)
+            diff = abs(true_diff)
+            if not self.under_attack and diff > 10 and type(self.x_drone) == int or type(self.x_drone) == float:
+                self.arrived_at_spot = False
+                # Move if not being attacked
+                if true_diff > 0:
+                    self.x_drone -= 2
+                    self.face_right = False
+                elif true_diff < 0:
+                    self.x_drone += 2
+                    self.face_right = True
+                else:
+                    pass
+            elif diff <= 10 and not self.under_attack:
+                # If arrived at spot, pick a new spot 
+                # Create a method that will do the little look aroud and add here
+                self.random_spot = randint(self.x_win_1, self.x_win_2)
+                self.arrived_at_spot = True
+            else:
+                pass
+
+
+        def sprite_chooser(self):
+            # Send the pic to blit - NOT the blit itself.
+            ''' idling'''
+            if not self.under_attack and not self.arrived_at_spot and not self.death:
+                if not self.face_right:
+                    drone_blit = self.sprite_list[0]
+                    return drone_blit
+                else:
+                    drone_blit = self.sprite_list[4]
+                    return drone_blit
+            elif not self.under_attack and self.arrived_at_spot and not self.death:
+                ''' Pick the correct frame to have the drone look left and right '''
+                drone_blit = self.sprite_list[self.drone_frame]
+                return drone_blit
+            elif self.under_attack and not self.death:
+                ''' Pick the correct frame to have the drone attack or be attacked add face_right feature'''
+                drone_blit = self.sprite_list[self.drone_frame]
+                return drone_blit
+            elif self.death == True:
+                drone_blit = self.x_plo_pics[int(self.x_plo_frame)]
+                #dead_drones += 1
+                if self.x_plo_frame == 8.0:
+                    self.x_plo_frame = 0
+                    self.x_drone = -200
+                    self.y_drone = -100
+                else:
+                    self.x_plo_frame += 0.5
+                return drone_blit
+            else:
+                drone_blit = self.sprite_list[0]
+                return drone_blit
+
+    class Cop_Car():
+        def __init__(self):
+            self.crown_vic = flying_cars[0]
+            self.crown_vic_R = flying_cars_R[0]
+            self.spotlight = flying_cars[4]
+            self.red_light = flying_cars[5]
+            self.on_screen = False
+            self.right_or_left = True
+            self.search = True
+            self.found_her = False
+            self.timer = 0
+            self.laz_lax = 0
+            self.x_val_light = None
+            self.y_val_light = 0
+            self.x_val_car = 0
+            self.y_val_car = 444
+            self.x_dest = 0
+            self.y_dest = 0
+            self.cop_timer = 0
+            self.speed = 3
+            self.diff_tween = 0
+            self.neg_maker = 1
+        def spotlight_shine(self):
+            if not self.x_val_light:
+                self.x_val_light = sophon.x + (choice([-40, -30, -20, -10, 10, 20, 30, 40]))
+                if self.x_val_light > sophon.x:
+                    self.right_or_left = False
+                else:
+                    self.right_or_left = True
+            else:
+                pass
+            self.y_val_light = sophon.y - 125
+            if not self.right_or_left:
+                self.x_val_light -= 3
+                xxx = self.x_val_light - self.laz_lax
+            else:
+                self.x_val_light += 3
+                xxx = self.x_val_light + self.laz_lax
+            self.timer += 1
+            if self.timer <= 32:
+                gameDisplay.blit(self.spotlight, (self.x_val_light, self.y_val_light))
+                if (self.timer > 0 and self.timer < 7) or (self.timer >= 15 and self.timer < 24):
+                    gameDisplay.blit(self.red_light, (xxx, self.y_val_light))
+                if self.laz_lax == 64:
+                    self.laz_lax = 0
+                else:
+                    self.laz_lax += 2
+            else:
+                self.timer = 0
+                self.search = False
+                self.x_val_light = None
+        def time_to_leave(self):
+            # Exit screen left - Cop cannot discover Sophon while heading back
+            self.speed = 11
+            self.x_val_car -= self.speed
+            gameDisplay.blit(self.crown_vic, (self.x_val_car, self.y_val_car))
+            return None
+        def seek_and_destroy(self):
+            # Take ten seconds to search.  Grab X,Y and head towards it
+            self.diff_tween = sophon.x - self.x_val_car
+            if abs(self.diff_tween) > 200:
+                self.speed = 6 * self.neg_maker
+            elif between(0, 200, abs(self.diff_tween)):
+                self.speed = 2 * self.neg_maker
+            else:
+                self.speed = 1
+            if self.cop_timer == 232 or self.cop_timer == 432:
+                # Grab X, Y and rollout! Blit after all conditionals
+                self.x_dest = sophon.x + (choice([-40, -30, -20, -10, 10, 20, 30, 40]))
+                self.y_dest = sophon.y + (choice([-20, -10, 0, 10, 20]))
+                if self.diff_tween >= 0:
+                    #  Is the police car on the left of Sophon?
+                    self.right_or_left = True
+                else:
+                    # Is the police car on the right of Sophon?
+                    self.x_val_car = 800
+                    self.right_or_left = False
+            else:
+                if not self.found_her:
+                    self.x_val_car += self.speed
+            if not self.right_or_left:
+                car_to_blit = self.crown_vic_R
+                self.neg_maker = 1
+            else:
+                car_to_blit = self.crown_vic_R
+                self.neg_maker = 1
+            gameDisplay.blit(car_to_blit, (self.x_val_car, self.y_val_light + 120))
+
+        
+        def cop_roll(self):
+            # AI to guide the cop to Sophon.  It should first go to the initial x val then find a new x.
+            # And head to that (Can it move y pos?)
+            # The method will be initiated with if self.timer == 30: cop_roll() with a slight pause
+            if between(0, 199, self.cop_timer):
+                if not between(-40, 800, self.x_val_car):
+                    self.x_val_car = -30
+                # Do Nothing
+                pass
+            elif between(200, 231, self.cop_timer):
+                # Murphy spotlight
+                self.spotlight_shine()
+            elif between(232, 631, self.cop_timer):
+                # Search for Sophon
+                if between(382, 461, self.cop_timer) and abs(self.speed) == 2 and abs(self.y_val_car - sophon.y) < 150 or self.found_her == True:
+                    self.found_her = True
+                    # Make the spotlight larger with the scale method
+                    got_her = pygame.transform.scale(self.spotlight, (420, 420))
+                    gameDisplay.blit(got_her, (sophon.x - 70, sophon.y - 150))
+                    self.cop_timer -= 1
+                    # Also create a thing to shine the red and blues and ADD gradient
+                # Cop will search - starting with grabbing a destination
+                if self.x_val_car <= -50:
+                    self.x_val_car = 0
+                self.seek_and_destroy()
+                # Listen for Sophon's pistol
+                da_diffy = sophon.y - self.y_val_car
+                if between(0, 800, self.x_val_car) and sophon.attack_burst == 6 and abs(da_diffy) < 100:
+                    self.found_her = True
+            elif between(632, 831, self.cop_timer):
+                # Time to leave.  Take ten seconds to leave
+                self.time_to_leave()
+            elif self.cop_timer == 832:
+                self.cop_timer = 0
+                self.x_val_car = 0
+                self.y_val_car = 344
+            self.cop_timer += 1
+
+    def smokey_fill(smoke_x, y):
+        gameDisplay.blit(smoke, (int(smoke_x), y))
+        smoke_x += 0.5
+
+    # Pre game variables
+    titles_bool = True
+    titles_counter = 0
+    ticker_bool = False
+    smoke_x = 0
+    # Drones
+    prox_mine = Turret(500, 493)
+    C3PO = Drone(0, 80, 0, 400)
+    BB_8 = Drone(0,250, 0, 400)
+    R2_D2 = Drone(100, 444, 100, 500)
+    BD_1 = Drone(690, 444, 400, 800)
+    bad_guys = [BD_1, R2_D2, BB_8, C3PO]
+    counter_guy = 0
+    sophon = Player()
+    murphy = Cop_Car()
+    car_1 = flying_car_obj()
+    car_2 = flying_car_obj()
+    car_3 = flying_car_obj()
+    car_4 = flying_car_obj()
+    cars = [car_1, car_2, car_3, car_4]
+    forty_sec = 0
+    title_quad = [x ** 2 for x in range(10)]
+    title_frame = 0
+    crashed = False
+    big_sign_frame = 0
+    bus_timer = -20
+    rescue_x = 0
+    # Once this equals 4 - allow the ending sequence.
+    dead_drones = 0
+    three_sec = 0
+    ticker_message = 0
+    x_vally = [0, 100, 200, 300, 500, 800, 1300, 2100, 3400]
+    quad_list_1 = [(x ** 2) for x in range(9)]
+    while not crashed:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                crashed = True
+        gameDisplay.fill(black)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] and sophon.x > (vel - 25) and not sophon.hurt:
+            sophon.x -= vel
+            sophon.walk = True
+            sophon.face_left = True
+        if keys[pygame.K_RIGHT] and sophon.x < (display_width - 50) and not sophon.hurt:
+            sophon.x += vel
+            sophon.walk = True
+            sophon.face_left = False
+        if not keys[pygame.K_RIGHT] and not keys[pygame.K_LEFT]:
+            sophon.walk = False
+            sophon.run = False
+
+        if keys[pygame.K_DOWN]:
+            if sophon.is_she_on_a_ladder(sophon.x, sophon.y):
+                sophon.y += vel
+                #sophon.climb = True
+            else:
+                pass
+            
+        if keys[pygame.K_UP]:
+            if not sophon.is_she_on_a_ladder(sophon.x, sophon.y):
+                sophon.run = True
+                if not sophon.isJump:
+                    vel = 7
+                else:
+                    vel = 3
+            else:
+                sophon.run = False
+                sophon.y -= vel
+                pass
+        else:
+            sophon.run = False
+            vel = 3
+        if not sophon.isJump:
+            if keys[pygame.K_SPACE] and not sophon.climb:
+                sophon.isJump = True
+            else:
+                pass
+        else:
+            if sophon.jumpCount >= -10:
+                neg = 1
+                if sophon.jumpCount < 0:
+                    neg = -1
+                sophon.y -= (sophon.jumpCount ** 2) * 0.2 * neg
+                sophon.jumpCount -= 1
+            else:
+                sophon.isJump = False
+                sophon.jumpCount = 10
+        gameDisplay.blit(bg_0, city_blit)
+        # Parallax background buildings  
+        if between(150, 450, sophon.x):
+            gameDisplay.blit(bg_1, (-200, 150))
+            gameDisplay.blit(bg_1, (200, 150))
+            gameDisplay.blit(bg_1, (500, 150))
+            # Closer Buildings
+            gameDisplay.blit(bg_2, ((-100), 150))
+            gameDisplay.blit(bg_2, ((450), 150))
+        elif sophon.x > 450:
+            lax = int((sophon.x - 450) / 4)
+            lax_close = int((sophon.x - 450) / 2)
+
+            gameDisplay.blit(bg_1, (-200 - lax, 150))
+            gameDisplay.blit(bg_1, (200 - lax, 150))
+            gameDisplay.blit(bg_1, (500 - lax, 150))
+            # Closer Buildings
+            gameDisplay.blit(bg_2, ((-100 - lax_close), 150))
+            gameDisplay.blit(bg_2, ((450 - lax_close), 150))
+        else:
+            lax = int((sophon.x - 150) / 4)
+            lax_close = int((sophon.x - 150) / 2)
+            gameDisplay.blit(bg_1, (-200 - lax, 150))
+            gameDisplay.blit(bg_1, (200 - lax, 150))
+            gameDisplay.blit(bg_1, (500 - lax, 150))
+            # Closer Buildings
+            gameDisplay.blit(bg_2, ((-100 - lax_close), 150))
+            gameDisplay.blit(bg_2, ((450 - lax_close), 150))
+        for car in cars:
+            car.car_fly()
+        sophon.y = min(444, sophon.y)
+        #Left side buildings
+        gameDisplay.blit(first_floor_sm, (parallaxion(-160, sophon.x), 450))
+        side_walls(-175, 490, 335, 'L')
+        side_walls(75, 490, 335, 'R')
+        gameDisplay.blit(window_open, (parallaxion(-150, sophon.x), 180))
+        gameDisplay.blit(window_open, (parallaxion(-10, sophon.x), 180))
+        gameDisplay.blit(window_open, (parallaxion(-80, sophon.x), 320))
+        gameDisplay.blit(window_open, (parallaxion(-10, sophon.x), 320))
+        gameDisplay.blit(blinds, (parallaxion(-80, sophon.x), 190))
+        gameDisplay.blit(brick_mid, (parallaxion(-145, sophon.x), 315))
+        gameDisplay.blit(brick_lines, (parallaxion(-115, sophon.x), 315))
+
+        # Middle building
+        gameDisplay.blit(first_floor, (parallaxion(215, sophon.x), 420))
+        side_walls(200, 490, 375, 'L')
+        side_walls(485, 490, 375, 'R')
+        gameDisplay.blit(window_open, (parallaxion(225, sophon.x), 270))
+        gameDisplay.blit(window_open, (parallaxion(305, sophon.x), 270))
+        gameDisplay.blit(window_open, (parallaxion(402, sophon.x), 270))
+        gameDisplay.blit(blinds, (parallaxion(377, sophon.x), 160))
+        gameDisplay.blit(blinds, (parallaxion(310, sophon.x), 160))
+        gameDisplay.blit(window_open, (parallaxion(220, sophon.x), 150))
+
+        # brick_mid brick_lines
+        gameDisplay.blit(brick_mid, (parallaxion(388, sophon.x), 290))
+        gameDisplay.blit(brick_mid, (parallaxion(300, sophon.x), 160))
+
+        # Right building
+        gameDisplay.blit(first_floor_lg, (parallaxion(590, sophon.x), 290))
+        side_walls(575, 490, 490, 'L')
+        side_walls(775, 490, 490, 'R')
+        gameDisplay.blit(window_open, (parallaxion(600, sophon.x), 140))
+        gameDisplay.blit(window_open, (parallaxion(685, sophon.x), 140))
+        gameDisplay.blit(window_open, (parallaxion(603, sophon.x), 10))
+        gameDisplay.blit(window_open, (parallaxion(688, sophon.x), 10))
+        ground(ground_square, ay)
+        Buildings_builder = True    
+        while Buildings_builder:
+            for i in range(-200, 800, 15):
+                # Screen Left Building
+                
+                if i >= -175 and i < 75:
+                    # building(ground_square, i, -90)
+                    if sophon.x <= 450 and sophon.x >= 150:
+                        ladder_maker(-105, 404)
+                        building(ground_square, i, -90)
+                    elif sophon.x > 450:
+                        lax = sophon.x - 450
+                        ladder_maker(-105 - lax, 404)
+                        building(ground_square, (i - lax), -90)
+                    else:
+                        lax = sophon.x - 150
+                        lax_x_value = i - lax
+                        ladder_maker(-105 - lax, 404)
+                        building(ground_square, lax_x_value, -90)
+
+
+                # Width of the middle building
+                if i >= 200 and i <= 485:
+                    # Floor 1, 2, 3
+                    if sophon.x <= 450 and sophon.x > 150:
+                        building(ground_square, i, -130)
+                        ladder_maker(450, 490)
+                        ladder_maker(450, 229)
+                        # Climb up ladder
+                    elif sophon.x > 450:
+                        lax = sophon.x - 450
+                        building(ground_square, (i - lax), -130)
+                        ladder_maker(450 - lax, 490)
+                        ladder_maker(450 - lax, 229)
+                    else:
+                        lax = sophon.x - 150
+                        building(ground_square, (i - lax), -130)
+                        ladder_maker(450 - lax, 490)
+                        ladder_maker(450 - lax, 229)
+                # Width of the building right
+                if i >= 575 and i <= 775:
+                    if sophon.x <= 450 and sophon.x > 150:
+                        building(ground_square, i, -260)
+                    elif sophon.x > 450:
+                        lax = sophon.x - 450
+                        building(ground_square, (i - lax), -260)
+                        #BD_1.x_drone = 
+                    else:
+                        building(ground_square, (i - lax), -260)
+                Buildings_builder = False
+        for drone in bad_guys:
+            if drone.death == False or drone.x_plo_frame > 0:
+                if drone.x_plo_frame == 6.0:
+                    drone.x_drone = 0
+                    drone.y_drone = 0
+                else:
+                    try:
+                        drone.bob_float(10)
+                        drone.move_random()
+                        drone.under_attack_meth()
+                        if drone.self_destruct_meth():
+                            sophon.hurt = True
+                        if sophon.attack_burst == 6 and drone.under_attack and not sophon.hurt:
+                            if drone.hits == 4:
+                                del drone
+                            else:
+                                drone.hits += 1
+                        drone_sprite = drone.sprite_chooser()
+                        gameDisplay.blit(drone_sprite, (parallaxion(drone.x_drone, sophon.x), drone.y_drone))
+                    except:
+                        pass
+            else:
+                pass
+        print('BD_1 X: ' + str(BD_1.x_drone)) 
+        print('BD_1 Y: ' + str(BD_1.y_drone)) 
+        sophon.falling_physics()
+        sophon_blit = sophon.sprite_chooser()
+        prox_mine.turret_idle()
+        gameDisplay.blit(big_sign_list[int(big_sign_frame)], (parallaxion(590, sophon.x), 190))
+        gameDisplay.blit(coke_sign_list[int(big_sign_frame)], (parallaxion(170, sophon.x), 100))
+        gameDisplay.blit(neon_sign_list[int(big_sign_frame)], (parallaxion(100, sophon.x), 180))
+        gameDisplay.blit(scroll_sign_list[int(big_sign_frame)], (parallaxion(750, sophon.x), 50))
+        gameDisplay.blit(side_sign_list[int(big_sign_frame)], (parallaxion(500, sophon.x), 300))
+        gameDisplay.blit(sushi_sign_list[int(big_sign_frame)], (parallaxion(790, sophon.x), 380))
+        gameDisplay.blit(sophon_blit, (sophon.x, sophon.y))
+        gameDisplay.blit(antenna, (parallaxion(25, sophon.x), 40))
+        murphy.cop_roll()
+        gameDisplay.blit(lamp_post, (parallaxion(100, sophon.x), 385))
+        dead_drone_list = [x.death for x in bad_guys]
+        print(dead_drone_list)
+        if not between(40, 190, sophon.y):
+            bus_timer = 0
+        if between(495, 605, sophon.x) and between(10, 210, sophon.y - 15) and all(dead_drone_list):
+            # Trigger the truck pick up Sophon
+            if bus_timer == 100:
+                rescue_sophon(rescue_x)
+                if rescue_x < 500:
+                    rescue_x += 4
+                else:
+                    gameDisplay.blit(titles_list[1], (200, 340))
+            else:
+                bus_timer += 1
+        else:
+            pass
+        gameDisplay.blit(smoke, (int(smoke_x), 90))
+        gameDisplay.blit(smoke, (int(smoke_x) - 465, 90))
+        gameDisplay.blit(smoke, (int(smoke_x) + 465, 90))
+        if ticker_bool:
+            gameDisplay.blit(campbell[int(big_sign_frame)], (30, 510))
+            gameDisplay.blit(titles_list[2], (80, 513))
+            gameDisplay.blit(sophon_name, (95, 516))
+            gameDisplay.blit(mess_surf[ticker_message], (95, 536))
+        else:
+            pass
+
+        if title_frame <= 80:
+            if title_frame < 9 and titles_bool == True:
+                warped_city = pygame.transform.scale(titles_list[5], (100, title_quad[int(title_frame)]))
+                gameDisplay.blit(warped_city, (300, 300))
+            elif titles_bool == True:
+                warped_city = pygame.transform.scale(titles_list[5], (100, 100))
+                gameDisplay.blit(warped_city, (300, 300))
+            else:
+                pass
+            title_frame += 1/2
+            if '8' in str(title_frame) or '9' in str(title_frame) or '7' in str(title_frame):
+                if titles_bool == True:
+                    titles_bool = False
+                else:
+                    titles_bool = True     
+        if sophon.hitz > 1:
+            pic_blit = pygame.transform.flip(fade_to_black, True, False)
+            pic_blit = pygame.transform.scale(pic_blit, (x_vally[sophon.hit_fall] + quad_list_1[sophon.hit_fall], 800))
+            gameDisplay.blit(pic_blit, (0, 0))
+          
+        '''Start here, above. Work on death black gradient, work on Busted screen'''
+        pistol_blast()
+        pygame.display.update()
+        print('Sophon X value: ' + str(sophon.x))
+        print('Sophon Y value: ' + str(sophon.y))
+        if big_sign_frame >= 2:
+            big_sign_frame = 0
+        else:
+            big_sign_frame += 1/3
+        if sophon.hurt:
+            sophon.got_hit_meth(500)
+        if sophon.idle_frame == 4:
+            sophon.idle_frame = 0
+        if sophon.walk_frame == 16:
+            sophon.walk_frame = 0
+        if sophon.jump_frame == 4:
+            sophon.jump_frame = 0
+        if sophon.run_frame == 8:
+            sophon.run_frame = 0
+        if sophon.climb_frame == 6:
+            sophon.climb_frame = 0
+        if smoke_x == 330:
+            smoke_x = 0
+        else:
+            smoke_x += 0.75
+        if sophon.hitz >= 2:
+            pass
+        if three_sec >= 60:
+            three_sec = 0
+            if ticker_bool == False:
+                ticker_bool = True
+                ticker_message += 1
+            else:
+                ticker_bool = False
+            
+            if ticker_message >= len(mess_surf):
+                ticker_message = 0
+        else:
+            three_sec += 1
+        clock.tick(20)
+Sophon_life = True
+chances = 0
+while Sophon_life:
+    chances += 1 
+    one_life()
+    if chances == 2:
+        Sophon_life = False
+    else:
+        pass
+pygame.quit()
+quit()
