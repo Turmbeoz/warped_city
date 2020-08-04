@@ -32,8 +32,8 @@ def one_life():
     pygame.display.set_caption('Warped City')
     black = (0, 0, 0)
     white = (255, 255, 255)
-    my_home_path = '/Users/tomophilia/Desktop/Tom Projects Current/Python/'
-    warped_path = my_home_path + 'Warped City/warped city files/'
+    my_home_path = '/Users/tomophilia/Documents/GitHub/'
+    warped_path = my_home_path + 'Warped_City_graphics/warped city files/'
 
     # Idle sprites s
     idler = 'SPRITES/player/idle/idle-'
